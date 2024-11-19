@@ -8,7 +8,7 @@ PlatformHandler getPlatformHandler() {
 
 class PlatformHandlerWeb extends PlatformHandler {
   @override
-  Future<String?> saveFile(FileModel fileModel) async {
+  Future<String?> saveFile(FileModel fileModel, {String? pathToSave}) async {
     bool result = await FileSaverWeb.downloadFile(fileModel);
     if (result) {
       return 'Downloads';

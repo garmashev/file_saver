@@ -5,8 +5,8 @@ class Saver {
   final FileModel fileModel;
   Saver({required this.fileModel});
   final PlatformHandler _platformHandler = PlatformHandler.instance;
-  Future<String?> save() async {
-    return await _platformHandler.saveFile(fileModel);
+  Future<String?> save({String? pathToSave}) async {
+    return await _platformHandler.saveFile(fileModel, pathToSave: pathToSave);
   }
 
   Future<String?> saveAs() async {

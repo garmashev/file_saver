@@ -10,7 +10,7 @@ abstract class PlatformHandler {
     return getPlatformHandler();
   }
 
-  Future<String?> saveFile(FileModel fileModel);
+  Future<String?> saveFile(FileModel fileModel, {String? pathToSave});
 
   Future<String?> saveAs(FileModel fileModel);
 }

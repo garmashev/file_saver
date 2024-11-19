@@ -52,6 +52,7 @@ class FileSaver {
     required String name,
     Uint8List? bytes,
     File? file,
+    String? filePath,
     String? pathToSave,
     LinkDetails? link,
     String ext = '',
@@ -64,12 +65,12 @@ class FileSaver {
       throw Exception('customMimeType is required when mimeType is MimeType.custom');
     }
     String extension = Helpers.getExtension(extension: ext);
-    final isFile = file != null;
+    final isFile = file != null || filePath != null;
     if (!isFile) {
       bytes = bytes ??
           await Helpers.getBytes(
             file: file,
-            filePath: pathToSave,
+            filePath: filePath,
             link: link,
             dioClient: dioClient,
             transformDioResponse: transformDioResponse,
@@ -79,10 +80,9 @@ class FileSaver {
       if (isFile) {
         directory = await saveFileOnly(
               name: name,
-              file: file,
+              file: file ?? File(filePath!),
               ext: extension,
               mimeType: mimeType,
-              pathToSave: pathToSave,
             ) ??
             _somethingWentWrong;
       } else {
@@ -92,7 +92,7 @@ class FileSaver {
                 bytes: bytes!,
                 ext: extension,
                 mimeType: mimeType.type.isEmpty ? customMimeType! : mimeType.type));
-        directory = await _saver.save() ?? _somethingWentWrong;
+        directory = await _saver.save(pathToSave: pathToSave) ?? _somethingWentWrong;
       }
       return directory;
     } catch (e) {
@@ -103,12 +103,11 @@ class FileSaver {
   Future<String?> saveFileOnly(
       {required String name,
       required File file,
-      String? pathToSave,
       String ext = '',
       MimeType mimeType = MimeType.other,
       String? customMimeType}) async {
     try {
-      final applicationDirectory = pathToSave ?? await Helpers.getDirectory();
+      final applicationDirectory = await Helpers.getDirectory();
 
       return (await file.copy('$applicationDirectory/$name$ext')).path;
     } catch (e) {

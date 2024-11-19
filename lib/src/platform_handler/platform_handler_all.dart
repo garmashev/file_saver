@@ -20,23 +20,20 @@ class PlatformHandlerAll extends PlatformHandler {
       'Something went wrong, please report the issue https://www.github.com/incrediblezayed/file_saver/issues';
   late String directory = _somethingWentWrong;
 
-  final String _issueLink =
-      'https://www.github.com/incrediblezayed/file_saver/issues';
+  final String _issueLink = 'https://www.github.com/incrediblezayed/file_saver/issues';
 
   Future<String> saveFileForAndroid(FileModel fileModel) async {
     try {
-      directory =
-          await _channel.invokeMethod<String>(_saveFile, fileModel.toMap()) ??
-              '';
+      directory = await _channel.invokeMethod<String>(_saveFile, fileModel.toMap()) ?? '';
       return directory;
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<String> saveFileForOtherPlatforms(FileModel fileModel) async {
+  Future<String> saveFileForOtherPlatforms(FileModel fileModel, {String? pathToSave}) async {
     String path = '';
-    path = await Helpers.getDirectory() ?? '';
+    path = pathToSave ?? await Helpers.getDirectory() ?? '';
     if (path == '') {
       log('The path was found null or empty, please report the issue at $_issueLink');
       throw Exception('The path was found null or empty');
@@ -55,11 +52,11 @@ class PlatformHandlerAll extends PlatformHandler {
   }
 
   @override
-  Future<String?> saveFile(FileModel fileModel) async {
+  Future<String?> saveFile(FileModel fileModel, {String? pathToSave}) async {
     if (Platform.isAndroid) {
       return await saveFileForAndroid(fileModel);
     } else {
-      return await saveFileForOtherPlatforms(fileModel);
+      return await saveFileForOtherPlatforms(fileModel, pathToSave: pathToSave);
     }
   }
 
@@ -70,8 +67,7 @@ class PlatformHandlerAll extends PlatformHandler {
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       path = await _channel.invokeMethod<String>(_saveAs, fileModel.toMap());
     } else if (Platform.isWindows) {
-      final Int64List? bytes =
-          await _channel.invokeMethod<Int64List?>('saveAs', fileModel.toMap());
+      final Int64List? bytes = await _channel.invokeMethod<Int64List?>('saveAs', fileModel.toMap());
       path = bytes == null ? null : String.fromCharCodes(bytes);
     } else {
       throw UnimplementedError('Unimplemented Error');
