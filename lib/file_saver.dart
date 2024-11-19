@@ -52,7 +52,7 @@ class FileSaver {
     required String name,
     Uint8List? bytes,
     File? file,
-    String? filePath,
+    String? pathToSave,
     LinkDetails? link,
     String ext = '',
     MimeType mimeType = MimeType.other,
@@ -61,16 +61,15 @@ class FileSaver {
     Uint8List Function(dynamic data)? transformDioResponse,
   }) async {
     if (mimeType == MimeType.custom && customMimeType == null) {
-      throw Exception(
-          'customMimeType is required when mimeType is MimeType.custom');
+      throw Exception('customMimeType is required when mimeType is MimeType.custom');
     }
     String extension = Helpers.getExtension(extension: ext);
-    final isFile = file != null || filePath != null;
+    final isFile = file != null;
     if (!isFile) {
       bytes = bytes ??
           await Helpers.getBytes(
             file: file,
-            filePath: filePath,
+            filePath: pathToSave,
             link: link,
             dioClient: dioClient,
             transformDioResponse: transformDioResponse,
@@ -80,9 +79,10 @@ class FileSaver {
       if (isFile) {
         directory = await saveFileOnly(
               name: name,
-              file: file ?? File(filePath!),
+              file: file,
               ext: extension,
               mimeType: mimeType,
+              pathToSave: pathToSave,
             ) ??
             _somethingWentWrong;
       } else {
@@ -91,8 +91,7 @@ class FileSaver {
                 name: name,
                 bytes: bytes!,
                 ext: extension,
-                mimeType:
-                    mimeType.type.isEmpty ? customMimeType! : mimeType.type));
+                mimeType: mimeType.type.isEmpty ? customMimeType! : mimeType.type));
         directory = await _saver.save() ?? _somethingWentWrong;
       }
       return directory;
@@ -104,11 +103,12 @@ class FileSaver {
   Future<String?> saveFileOnly(
       {required String name,
       required File file,
+      String? pathToSave,
       String ext = '',
       MimeType mimeType = MimeType.other,
       String? customMimeType}) async {
     try {
-      final applicationDirectory = await Helpers.getDirectory();
+      final applicationDirectory = pathToSave ?? await Helpers.getDirectory();
 
       return (await file.copy('$applicationDirectory/$name$ext')).path;
     } catch (e) {
@@ -154,8 +154,7 @@ class FileSaver {
     Uint8List Function(dynamic data)? transformDioResponse,
   }) async {
     if (mimeType == MimeType.custom && customMimeType == null) {
-      throw Exception(
-          'customMimeType is required when mimeType is MimeType.custom');
+      throw Exception('customMimeType is required when mimeType is MimeType.custom');
     }
     bytes = bytes ??
         await Helpers.getBytes(
@@ -171,8 +170,7 @@ class FileSaver {
             name: name,
             bytes: bytes,
             ext: ext,
-            mimeType:
-                mimeType == MimeType.custom ? customMimeType! : mimeType.type));
+            mimeType: mimeType == MimeType.custom ? customMimeType! : mimeType.type));
     String? path = await _saver.saveAs();
     return path;
   }
